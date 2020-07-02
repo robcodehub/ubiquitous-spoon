@@ -42,6 +42,7 @@ app.use('/api/logout', logout);
 app.use('/api/refresh_token', refresh);
 app.use('/api/user/info', userInfo);
 app.use('/api/favorites', favorites);
+app.use('/api/preference', foodPreferences);
 
 // Error handler
 const errorHandler = (err, req, res, next) => {
