@@ -19,6 +19,7 @@ const favorites = require('./routes/favorites');
 const userInfo = require('./routes/userinfo');
 const jwtContoller = require('./controllers/jwtController');
 const refresh = require('./routes/refresh');
+const foodPreferences = require('./routes/foodpreferences');
 
 const app = express();
 
