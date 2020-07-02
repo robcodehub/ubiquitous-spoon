@@ -15,3 +15,5 @@
 export const SET_USERNAME = 'SET_USERNAME';
 export const SET_USERPREFS = 'SET_USERPREFS';
 export const CLEAR_USER = 'CLEAR_USER';
+
+export const SET_FOODPREFS = 'SET_FOODPREFS';
