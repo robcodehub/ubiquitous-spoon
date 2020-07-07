@@ -3,47 +3,37 @@ const pool = require('../models/usersModel');
 const preferenceController = {};
 
 // Get all diets in database
-preferenceController.getAllDiets = async (req, res, next) => {
-  const queryString = `SELECT * FROM preferencelookup WHERE type_id=1;`;
-
+preferenceController.getDietOrIntolerances = async (req, res, next) => {
+  if (!req.query.type) {
+    return next({
+      log: `preferences controller error: Type of preference not provided`,
+      message: { err: 'An error with getting preference(s) has occurred' },
+    });
+  }
+  const queryString = `SELECT preferencelookup.id, preferencelookup.preference as value FROM preferencelookup INNER JOIN preferencetype ON preferencelookup.type_id=preferencetype.id WHERE preferencetype.preference='${req.query.type}';`;
   try {
     const { rows } = await pool.query(queryString);
-    res.locals.diets = rows;
-    next();
+    res.locals.preference = {
+      [req.query.type.toLowerCase()]: rows,
+    };
+    return next();
   } catch (err) {
-    next({
+    return next({
       log: `preferences controller error: ${err.message}`,
       message: { err: 'An error with getting diets has occurred' },
     });
   }
 };
 
-// Get all intolerances in database
-preferenceController.getIntolerances = async (req, res, next) => {
-  const queryString = `SELECT * FROM preferencelookup WHERE type_id=2;`;
-
-  try {
-    const { rows } = await pool.query(queryString);
-    res.locals.intolerances = rows;
-    next();
-  } catch (err) {
-    next({
-      log: `preferences controller error: ${err.message}`,
-      message: { err: 'An error with getting intolerances has occurred' },
-    });
-  }
-};
-
 // Get intolerances and diet preferences
 preferenceController.getDietAndIntolerances = async (req, res, next) => {
-  const queryString = `SELECT * FROM preferencelookup;`;
-
+  const queryString = `SELECT preferencelookup.id, preferencelookup.preference as value, preferencetype.preference as type  FROM preferencelookup INNER JOIN preferencetype ON preferencelookup.type_id=preferencetype.id;`;
   try {
     const { rows } = await pool.query(queryString);
     res.locals.preferences = rows;
-    next();
+    return next();
   } catch (err) {
-    next({
+    return next({
       log: `preferences controller error: ${err.message}`,
       message: { err: 'An error with getting diet and intolerances has occurred' },
     });
@@ -52,7 +42,13 @@ preferenceController.getDietAndIntolerances = async (req, res, next) => {
 
 // Get intolerances and diet preferences for a user
 preferenceController.getUserPreferences = async (req, res, next) => {
-  const queryString = `SELECT * FROM userpreference WHERE user_id=${req.body.user_id};`;
+  // const queryString = `SELECT id, user_id, preference_id FROM userpreference WHERE user_id=${req.params.user_id};`;
+  const queryString = `SELECT tempTable.id, tempTable.preferencename, tempTable.type_id, preferencetype.preference as preferencetype
+                        FROM (
+                          SELECT userpreference.id, preferencelookup.preference as preferencename, preferencelookup.id as preferenceid, preferencelookup.type_id  FROM userpreference
+                          INNER JOIN preferencelookup ON userpreference.preference_id = preferencelookup.id
+                          WHERE userpreference.user_id=${req.params.user_id}
+                        ) AS tempTable INNER JOIN preferencetype ON tempTable.type_id=preferencetype.id`;
   try {
     const { rows } = await pool.query(queryString);
     res.locals.userpreferences = rows;
@@ -89,59 +85,5 @@ preferenceController.addUserPreferences = async (req, res, next) => {
     next();
   });
 };
-
-// // Update diet and intolerances preferences
-// preferenceController.updateDietAndIntolerances = (req, res, next) => {
-//   // Get info from request
-//   const { userId } = req.body;
-//   const { glutenFree } = req.body;
-//   const { vegan } = req.body;
-//   const { vegetarian } = req.body;
-
-//   // Update info in database
-//   const text = `UPDATE userpreference SET gluten_free = '${glutenFree}', vegan = '${vegan}', vegetarian = '${vegetarian}' WHERE user_id = '${userId}'`;
-//   pool.query(text, (err, response) => {
-//     if (err) {
-//       return next(err);
-//     }
-//     next();
-//   });
-// };
-
-// // Update intolerances
-// preferenceController.updateIntolerances = (req, res, next) => {
-//   // Get info from request
-//   const { userId } = req.body;
-//   const { glutenFree } = req.body;
-//   const { vegan } = req.body;
-//   const { vegetarian } = req.body;
-
-//   // Update info in database
-//   const text = `UPDATE userpreference SET gluten_free = '${glutenFree}', vegan = '${vegan}', vegetarian = '${vegetarian}' WHERE user_id = '${userId}'`;
-//   pool.query(text, (err, response) => {
-//     if (err) {
-//       return next(err);
-//     }
-//     next();
-//   });
-// };
-
-// // Update diet preferences
-// preferenceController.updateDietPreferences = (req, res, next) => {
-//   // Get info from request
-//   const { userId } = req.body;
-//   const { glutenFree } = req.body;
-//   const { vegan } = req.body;
-//   const { vegetarian } = req.body;
-
-//   // Update info in database
-//   const text = `UPDATE userpreference SET gluten_free = '${glutenFree}', vegan = '${vegan}', vegetarian = '${vegetarian}' WHERE user_id = '${userId}'`;
-//   pool.query(text, (err, response) => {
-//     if (err) {
-//       return next(err);
-//     }
-//     next();
-//   });
-// };
 
 module.exports = preferenceController;
