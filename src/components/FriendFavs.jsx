@@ -1,44 +1,53 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Card, Divider } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Card, Switch, Radio, Avatar, Space, Divider } from 'antd';
 import { DeleteOutlined, MehOutlined, LinkOutlined } from '@ant-design/icons';
+import { connect } from 'react-redux';
+import * as actions from '../actions/actions';
 
 const { Meta } = Card;
 
-function PublicProfile() {
-  const { userID } = useParams(); // userID is username in this component
+const FriendFavs = (props) => {
   const [favs, setFavs] = useState([]);
 
   // On mount, fetch the users favorites from the DB
   useEffect(() => {
-    fetch(`/api/favorites/${userID}`)
+    fetch(`/api/favorites/${props.username}`)
       .then((res) => res.json())
       .then((resData) => {
         // Store the recipes in state
         setFavs(resData.favorites);
-        console.log('RESDATA======', resData);
       })
       .catch((err) => {
         console.log(err);
       });
-  }, [userID]);
+  }, [props.username]);
 
-  useEffect(() => {
-    fetch(`/api/user/1`)
+  const removeFav = (recipeId) => {
+    const data = { recipeId };
+
+    // make a fetch request to backend to delete the recipe from user's favorites
+    fetch(`/api/favorites/${props.username}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    })
       .then((res) => res.json())
       .then((resData) => {
-        // Store the recipes in state
-        console.log('RESDATA======', resData);
+        if (resData.success) console.log('successfully removed favorite');
       })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
+      .catch((err) => console.log(err));
+
+    // Once favorite has been deleted from the DB, remove it from the favs array in state
+    const newFavs = favs.filter((fav) => fav.id !== recipeId);
+    setFavs(newFavs);
+  };
 
   return (
     <div className="site-layout-content">
       <Card style={{ width: '66%', opacity: 0.9 }}>
-        <Divider orientation="left">{`${userID}'s saved recipes`}</Divider>
+        <Divider orientation="left">{`${props.username}'s saved recipes`}</Divider>
         <div className="Favorites_Container">
           {favs.map((fav, i) => {
             return (
@@ -67,6 +76,6 @@ function PublicProfile() {
       </Card>
     </div>
   );
-}
+};
 
-export default PublicProfile;
+export default FriendFavs;
