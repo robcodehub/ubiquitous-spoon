@@ -9,22 +9,8 @@ function PublicProfile() {
   const { userID } = useParams(); // userID is username in this component
   const [favs, setFavs] = useState([]);
 
-  // On mount, fetch the users favorites from the DB
   useEffect(() => {
-    fetch(`/api/favorites/${userID}`)
-      .then((res) => res.json())
-      .then((resData) => {
-        // Store the recipes in state
-        setFavs(resData.favorites);
-        console.log('RESDATA======', resData);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, [userID]);
-
-  useEffect(() => {
-    fetch(`/api/user/1`)
+    fetch(`/api/preference/userprefs/3`)
       .then((res) => res.json())
       .then((resData) => {
         // Store the recipes in state
@@ -34,6 +20,20 @@ function PublicProfile() {
         console.log(err);
       });
   }, []);
+
+  // On mount, fetch the users favorites from the DB
+  useEffect(() => {
+    fetch(`/api/favorites/${userID}`)
+      .then((res) => res.json())
+      .then((resData) => {
+        // Store the recipes in state
+        setFavs(resData.favorites);
+        // console.log('RESDATA======', resData);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, [userID]);
 
   return (
     <div className="site-layout-content">

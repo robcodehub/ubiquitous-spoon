@@ -22,6 +22,11 @@ router.get('/user/:user_id', preferenceController.getUserPreferences, (req, res)
   res.status(200).json({ success: true, userpreferences: res.locals.userpreferences });
 });
 
+// Get all diets and intolerances for user
+router.get('/userprefs/:user_id', preferenceController.getPublicProfileInfo, (req, res) => {
+  res.status(200).json({ success: true, userpreferences: res.locals.userpreferences });
+});
+
 // Post diets and intolerances for new user
 router.post('/userpreferences', preferenceController.addUserPreferences, (req, res) => {
   //   res.status(200).json({ success: true, userpreferences: res.locals.userpreferences });

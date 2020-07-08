@@ -51,6 +51,9 @@ preferenceController.getDietAndIntolerances = async (req, res, next) => {
 // it must have firstto resolve the user_id from whatever paramter it has
 preferenceController.userPreferences = async (user_id) => {
   // const queryString = `SELECT id, user_id, preference_id FROM userpreference WHERE user_id=${req.params.user_id};`;
+
+  console.log('USER ID ======', user_id);
+
   const queryString = `SELECT tempTable.id, tempTable.preferencename, tempTable.type_id, preferencetype.preference as preferencetype
                         FROM (
                           SELECT userpreference.id, preferencelookup.preference as preferencename, preferencelookup.id as preferenceid, preferencelookup.type_id  FROM userpreference
@@ -140,6 +143,23 @@ preferenceController.addUserPreferences = async (req, res, next) => {
     res.locals.userpreferences = req.body.userpreferences;
     next();
   });
+};
+
+preferenceController.getPublicProfileInfo = async (req, res, next) => {
+  // const queryString = `SELECT id, user_id, preference_id FROM userpreference WHERE user_id=${req.params.user_id};`;
+  console.log('REQ PARAMS ID ====', req.params.user_id);
+
+  const { user_id } = req.params;
+
+  const queryString = `SELECT userpreference.user_id, userpreference.preference_id FROM userpreference WHERE user_id=${user_id}`;
+  try {
+    const { rows } = await pool.query(queryString);
+    console.log('ROWS======', rows);
+    res.locals.userpreferences = rows;
+    next();
+  } catch (err) {
+    return { status: false, message: err.message };
+  }
 };
 
 module.exports = preferenceController;
