@@ -160,7 +160,7 @@ preferenceController.addUserPreferences = async (req, res, next) => {
 };
 
 preferenceController.updateUserPreferences = async (req, res, next) => {
-  let user_id = await handlers.userId(res.locals.username); // should be res.locals.username
+  const user_id = await handlers.userId(res.locals.username); // should be res.locals.username
   if (!user_id.status) {
     return next({
       log: 'updateUserPreferences',
@@ -179,12 +179,11 @@ preferenceController.updateUserPreferences = async (req, res, next) => {
 
     res.locals.userpreferences = req.body.userpreferences;
     return next();
-  } else {
-    return next({
-      log: `updateUserPreferences error: ${clearPreviousPreferences.value}`,
-      message: { err: `HERE : Error in updateUserPreferences` },
-    });
   }
+  return next({
+    log: `updateUserPreferences error: ${clearPreviousPreferences.value}`,
+    message: { err: `HERE : Error in updateUserPreferences` },
+  });
 };
 
 preferenceController.getPublicProfileInfo = async (req, res, next) => {
@@ -193,7 +192,9 @@ preferenceController.getPublicProfileInfo = async (req, res, next) => {
 
   const { user_id } = req.params;
 
-  const queryString = `SELECT userpreference.user_id, userpreference.preference_id FROM userpreference WHERE user_id=${user_id}`;
+  // `SELECT userpreference.user_id, userpreference.preference_id FROM userpreference WHERE user_id=${user_id}`;
+  const queryString = `SELECT userpreference.user_id, userpreference.preference_id, preferencelookup.preference, preferencelookup.type_id FROM userpreference LEFT JOIN preferencelookup ON userpreference.preference_id = preferencelookup.id WHERE userpreference.user_id=${user_id}`;
+
   try {
     const { rows } = await pool.query(queryString);
     console.log('ROWS======', rows);
